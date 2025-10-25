@@ -1,5 +1,7 @@
 """
 wget https://huggingface.co/datasets/thewh1teagle/heb-text/resolve/main/HeDC4-enhanced-v3.csv.7z
+sudo apt install p7zip-full -y
+7z x HeDC4-enhanced-v3.csv.7z
 """
 from transformers import AutoTokenizer, AutoModel
 from transformers.models.bert.tokenization_bert_fast import BertTokenizerFast
