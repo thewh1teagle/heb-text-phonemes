@@ -8,31 +8,31 @@ def remove_diacritics(t): return re.sub(r'[\u0590-\u05c7|]', '', t)
 def hash_text(t): return hashlib.sha1(t.strip().encode()).hexdigest()[:6]
 
 def worker(gpu_id, tasks, output_path):
-    # Load model/tokenizer per worker
     tokenizer = AutoTokenizer.from_pretrained("thewh1teagle/phonikud")
     model = AutoModel.from_pretrained("thewh1teagle/phonikud", trust_remote_code=True)
     model.to(f"cuda:{gpu_id}")
     model.eval()
 
     batch_size = 10
-    # ✅ Progress bar per GPU
     pbar = tqdm(total=len(tasks), position=gpu_id, desc=f"GPU{gpu_id}")
 
     with open(output_path, "w") as out:
-        try:
         for i in range(0, len(tasks), batch_size):
             batch = tasks[i:i+batch_size]
+
+            try:
                 preds = model.predict(batch, tokenizer)[0]
                 for p in preds:
                     out.write(p + "\n")
+            except Exception as e:
+                print(f"[GPU{gpu_id}] ❌ Error at batch {i//batch_size}: {e}")
 
-                pbar.update(len(batch))
-        except Exception as e:
-            print(f"[GPU{gpu_id}] Error processing batch: {e}")
-            continue
+            pbar.update(len(batch))
 
     pbar.close()
     print(f"GPU{gpu_id} ✅ finished")
+
+
 
 def run_parallel(texts):
     num_gpus = torch.cuda.device_count()
