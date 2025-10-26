@@ -13,7 +13,7 @@ def worker(gpu_id, tasks, output_path):
     model.to(f"cuda:{gpu_id}")
     model.eval()
 
-    batch_size = 10
+    batch_size = 20
     pbar = tqdm(total=len(tasks), position=gpu_id, desc=f"GPU{gpu_id}")
 
     with open(output_path, "w") as out:
@@ -21,7 +21,7 @@ def worker(gpu_id, tasks, output_path):
             batch = tasks[i:i+batch_size]
 
             try:
-                preds = model.predict(batch, tokenizer)[0]
+                preds = model.predict(batch, tokenizer, mark_matres_lectionis='\u05af')
                 for p in preds:
                     out.write(p + "\n")
             except Exception as e:
